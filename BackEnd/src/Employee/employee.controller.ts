@@ -3,7 +3,6 @@ import { EmployeeService } from "./employee.service";
 import { EmployeeDTO, changePasswordDTO, profileDTO } from "./DTO/employee.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { MulterError, diskStorage } from "multer";
-import { EmployeeEntity } from "./Entity/employee.entity";
 import { AuthGuard } from '../Authentication/auth.guard';
 import * as bcrypt from 'bcrypt';
 import { Roles } from '../CustomDecorator/roles.decorator';

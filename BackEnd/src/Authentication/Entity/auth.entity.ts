@@ -1,20 +1,34 @@
-import { EmployeeEntity } from "src/Employee/Entity/employee.entity";
-import {  Column, Entity,  OneToOne, PrimaryColumn } from "typeorm";
+import { AttendanceReports } from "src/Administrator/Entity/AttendanceReports.entity";
+import { Role } from "src/Administrator/Entity/Role.entity";
+import { SalarySheet } from "src/Administrator/Entity/SalarySheet.entity";
+import { Users } from "src/CommonEntities/user.entity";
+import {  Column, Entity,  Index,  JoinColumn,  ManyToOne,  OneToMany,  OneToOne, PrimaryColumn } from "typeorm";
 
 
 @Entity("Authentication")
-export class AuthenticationEntity{
+export class Authentication {
+    @PrimaryColumn({ name: 'Email', type: 'varchar', length: 100 })
+    Email: string;
 
-    @PrimaryColumn({name:'Email', type: 'varchar', length: 100}) 
-    email: string;
-    @Column({ type: 'varchar' })
-    password: string;
-    @Column({name:'Role', type: 'varchar', length: 20 })
-    role: string;
-    @Column({name:'Active',default:false}) 
-    isActive: boolean;
-    
-    @OneToOne(() => EmployeeEntity, Users => Users.email)
-    users: EmployeeEntity;
-    
+    @Column({ name: 'Password',type: 'varchar' })
+    Password: string;
+
+    @Column({ name: "RoleID" })
+    RoleID: string;
+
+    @Column({name: 'Active', default: false })
+    Active: boolean;
+
+    @ManyToOne(() => Role, Role => Role.Authentications, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+    @JoinColumn({ name: "RoleID" })
+    Role: Role;
+
+    @OneToOne(() => Users, Users => Users.Authentication)
+    User: Users;
+
+    @OneToMany(() => AttendanceReports, AttendanceReports => AttendanceReports.Authentication)
+    AttendanceReports: AttendanceReports[];
+
+    @OneToMany(() => SalarySheet, SalarySheet => SalarySheet.Authentication)
+    SalarySheet: SalarySheet[];
 }

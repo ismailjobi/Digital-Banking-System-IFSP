@@ -1,41 +1,47 @@
-import { EmployeeEntity } from "./employee.entity";
-import {  BeforeInsert, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
+import { Users } from "../../CommonEntities/user.entity";
+import {  BeforeInsert, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 
 @Entity("Transaction")
-export class TransactionEntity{
-
-    @PrimaryColumn({type: "varchar"})
+export class Transactions {
+    @PrimaryColumn({ type: "varchar" })
     transactionId: string;
-    @Column({name:'AccountNumber'})
-    acountNumber: number;
-    @Column({name:'Amount'})
+
+    @Column({ name: 'AccountNumber' })
+    accountNumber: number;
+
+    @Column({ name: 'ReceiverAccount' })
+    receiverAccount: number;
+
+    @Column({ name: 'Amount' })
     amount: number;
-    @Column({name:'ReceiverAccount'})
-    receiverAccount: number ;
-    @Column({name:'AccountHolderName',length: 100,type: "varchar"})
-    holderName: string;
-    @Column({name:'AccountType',length: 100,type: "varchar"})
-    accountType: string;
-    @Column({name:'BankCode'})
+
+    @Column({ name: 'ReceiverName', length: 100, type: "varchar" })
+    receiverName: string;
+
+    @Column({ name: 'BankCode' })
     bankCode: number;
-    @Column({name:'RoutingNumber'})
+
+    @Column({ name: 'RoutingNumber' })
     routingNumber: number;
-    @Column({name:'TransferType',length: 20,type: "varchar"})
+
+    @Column({ name: 'TransferType', length: 20, type: "varchar" })
     transferType: string;
-    @Column({name:'Status',default:true}) 
+
+    @Column({ name: 'Status', default: true })
     transactionStatus: boolean;
+
     @CreateDateColumn({ name: 'TransactionTime' })
     applicationTime: Date;
-    
+
     @BeforeInsert()
-    generateId():string {
-    // Custom logic to generate a 5-digit number
-       const randomNumber = Math.floor(10000 + Math.random() * 90000).toString();
-       this.transactionId = 'T-' + randomNumber;
-       return this.transactionId;
+    generateId(): string {
+        const randomNumber = Math.floor(10000 + Math.random() * 90000).toString();
+        this.transactionId = 'T-' + randomNumber;
+        return this.transactionId;
     }
-    @ManyToOne(() => EmployeeEntity, Users => Users.Transactions)
-    @JoinColumn({name:'User_ID'})
-    user: EmployeeEntity;
-    
+
+    @ManyToOne(() => Users, Users => Users.Transactions)
+    @JoinColumn({ name: 'User_ID' })
+    userId: Users;
 }
+

@@ -1,10 +1,10 @@
-import { EmployeeEntity } from "./employee.entity";
+import { Users } from "../../CommonEntities/user.entity";
 import { ServiceEntity } from "./service.entity";
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn} from "typeorm";
+import { BeforeInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryColumn} from "typeorm";
 
 @Entity("AccountInfo")
 export class AccountEntity {
-    @PrimaryColumn({ name: 'AccountNumber'})
+    @PrimaryColumn({ name: 'AccountNumber' })
     accountNumber: number;
 
     @Column({ name: 'NomineeName', type: 'varchar', length: 150 })
@@ -19,7 +19,7 @@ export class AccountEntity {
     @Column({ name: 'NID', unique: true })
     nid: number;
 
-    @Column({ name: 'Phone',type: 'varchar' })
+    @Column({ name: 'Phone', type: 'varchar' })
     phone: string;
 
     @Column({ name: 'Address' })
@@ -28,13 +28,13 @@ export class AccountEntity {
     @Column({ name: 'NomineePicture' })
     filename: string;
 
-    @Column({ name: 'AccountType',type: 'varchar',nullable:true })
+    @Column({ name: 'AccountType', type: 'varchar', nullable: true })
     accountType: string;
- 
-    @Column({ name: 'Balance',default:0,nullable:true })
+
+    @Column({ name: 'Balance', default: 0, nullable: true })
     balance: number;
 
-    @Column({ name: 'AccountStatus', default: true }) 
+    @Column({ name: 'AccountStatus', default: true })
     accountStatus: boolean;
 
     @BeforeInsert()
@@ -42,12 +42,12 @@ export class AccountEntity {
         // Custom logic to generate a 8-digit number
         const randomNumber = Math.floor(10000000 + Math.random() * 90000000);
         this.accountNumber = randomNumber;
-        return this.accountNumber
+        return this.accountNumber;
     }
 
-    @ManyToOne(() => EmployeeEntity, Users => Users.Accounts)
+    @ManyToOne(() => Users, Users => Users.Accounts)
     @JoinColumn({ name: 'User_ID' })
-    user: EmployeeEntity;
+    userId: Users;
 
     @OneToMany(() => ServiceEntity, service => service.account)
     services: ServiceEntity[];
