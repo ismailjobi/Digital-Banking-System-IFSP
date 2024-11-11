@@ -13,9 +13,6 @@ export class Authentication {
     @Column({ name: 'Password',type: 'varchar' })
     Password: string;
 
-    @Column({ name: "RoleID" })
-    RoleID: string;
-
     @Column({name: 'Active', default: false })
     Active: boolean;
 
