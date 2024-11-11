@@ -15,6 +15,9 @@ export class Authentication {
 
     @Column({name: 'Active', default: false })
     Active: boolean;
+    
+    @Column({type:'varchar', name: "RoleID" })
+    roleId: string;
 
     @ManyToOne(() => Role, Role => Role.Authentications, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
     @JoinColumn({ name: "RoleID" })

@@ -16,8 +16,8 @@ export class AccountEntity {
     @Column({ name: 'DOB', type: 'date' })
     dob: Date;
 
-    @Column({ name: 'NID', unique: true })
-    nid: number;
+    @Column({ name: 'NomineeNID',type: 'varchar', unique: true })
+    nid: string;
 
     @Column({ name: 'Phone', type: 'varchar' })
     phone: string;

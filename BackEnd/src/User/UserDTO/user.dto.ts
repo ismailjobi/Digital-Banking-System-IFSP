@@ -21,7 +21,7 @@ export class RegistrationUserDto{
 
     @IsNotEmpty()
     @Matches(/^\d{8}(?:\d{8})?$/)
-    nid:number;
+    nid:string;
 
     @IsNotEmpty()
    @Matches(/^01\d{9}$/)
@@ -40,8 +40,7 @@ export class RegistrationUserDto{
    // @Matches(/[A-Za-z\d!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]{8,}$/)
     password:string;
 
-    @Optional()
-    role:string;
+    
     //isActive:boolean;
 
 
@@ -58,7 +57,7 @@ export class RegistrationUserDto{
 
     @IsNotEmpty()
     @Matches(/^\d{8}(?:\d{8})?$/)
-    nomineenNid: number;
+    nomineenNid: string;
 
     @IsNotEmpty()
     @Matches(/^01\d{9}$/)

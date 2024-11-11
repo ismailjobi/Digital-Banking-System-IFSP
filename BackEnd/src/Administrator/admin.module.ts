@@ -22,8 +22,6 @@ import { Authentication } from 'src/Authentication/Entity/auth.entity';
 import { Users } from 'src/CommonEntities/user.entity';
 import { AdminOTP } from './Entity/AdminOTP.entity';
 
-
-
 @Module({
   imports: [adminSignup, AdminDetails,UpdateAdminDetails,UpdateAdminEmail,salarySheetGen,AllocateSalary, ForgetAdminPassword, submitOtp, TypeOrmModule.forFeature([Role, BaseSalary, AttendanceReports, SalarySheet, ProductKeys, Authentication, Users, AdminOTP, LoginSessions, Transactions]),
     // JwtModule.register({

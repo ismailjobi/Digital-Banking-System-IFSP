@@ -26,7 +26,7 @@ export class Users {
 
     @Column({type:'varchar', name: "Address" })
     address: string;
-
+    
     @Column({type:'varchar', name: "FileName" })
     filename: string; // PictureName
 

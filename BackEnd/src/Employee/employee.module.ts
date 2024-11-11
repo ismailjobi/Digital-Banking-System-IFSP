@@ -12,11 +12,12 @@ import { UserService } from "src/User/user.service";
 import { Users } from "src/CommonEntities/user.entity";
 import { Authentication } from "src/Authentication/Entity/auth.entity";
 import { Transactions } from "./Entity/transaction.entity";
+import { AdminModule } from "src/Administrator/admin.module";
 
 
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Users,Authentication,AccountEntity,Transactions,ServiceEntity],),
+    imports: [AdminModule,TypeOrmModule.forFeature([Users,Authentication,AccountEntity,Transactions,ServiceEntity],),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,

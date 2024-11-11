@@ -13,9 +13,11 @@ import { EmailService } from 'src/Mailer/mailer.service';
 import { Users } from 'src/CommonEntities/user.entity';
 import { Authentication } from 'src/Authentication/Entity/auth.entity';
 import { Transactions } from 'src/Employee/Entity/transaction.entity';
+import { AdminModule } from 'src/Administrator/admin.module';
 
 @Module({
   imports: [
+    AdminModule,
     TypeOrmModule.forFeature([
       Users,
       Authentication,

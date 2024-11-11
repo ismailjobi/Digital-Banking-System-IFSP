@@ -4,11 +4,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { jwtConstants } from './constants';
 import { EmployeeModule } from 'src/Employee/employee.module';
+import { UserModule } from 'src/User/user.module';
 
 
 @Module({
   imports: [
-    EmployeeModule,
+    EmployeeModule,UserModule,
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,

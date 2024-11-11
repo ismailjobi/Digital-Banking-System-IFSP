@@ -48,7 +48,7 @@ export class AdminService {
         try {
             // console.log(email);
             let exData = await this.authenticationRepository.find({
-                where: { Email: email, RoleID: await this.getRoleIdByName("admin"), Active: true }
+                where: { Email: email, roleId: await this.getRoleIdByName("admin"), Active: true }
             });
             // console.log(exData);
             if (exData.length == 0) {

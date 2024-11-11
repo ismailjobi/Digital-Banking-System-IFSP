@@ -23,7 +23,7 @@ export class adminAuthService {
             }
             const payload = {
                 email:adminData.Email,
-                role:adminData.RoleID
+                role:adminData.roleId
             }
             return await this.jwtService.signAsync(payload);
         }
