@@ -31,7 +31,7 @@ export class EmployeeService {
 
     async findOne(logindata: loginDTO): Promise<any> {
       try {
-          return await this.autheRepo.findOneBy({ Email: logindata.email });
+          return await this.autheRepo.findOne({ where:{ Email: logindata.email},relations: ['User','Role'] });
       } catch (error) {
           // Here We Handle The Error 
           throw new Error("Error occurred while finding user.");

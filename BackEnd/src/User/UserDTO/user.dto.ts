@@ -13,7 +13,7 @@ export class RegistrationUserDto{
     name:string;
      @IsNotEmpty()
 
-    @Matches(/^(male|female)$/i)
+    // @Matches(/^(male|female)$/i)
     gender:string;
 
     @IsNotEmpty()
@@ -49,7 +49,7 @@ export class RegistrationUserDto{
 
 
 
-   @Matches(/^(male|female)$/i)
+  //  @Matches(/^(male|female)$/i)
     nomineeGender: string;
 
     @IsNotEmpty()

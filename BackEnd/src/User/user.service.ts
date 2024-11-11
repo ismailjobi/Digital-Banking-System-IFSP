@@ -68,15 +68,15 @@ export class UserService {
           return "This Email already exists";
         }
     
-        await this.userRepository.save(userRegistration);
         await this.authRepository.save(userRegistration.Authentication);
+        await this.userRepository.save(userRegistration);
         await this.accountRepository.save(account);
     
-        const loginTime = new Date();
-        const subject = "Welcome to IFSP BANK PLC";
-        const body = "Your Account has been created at : " + loginTime;
+        // const loginTime = new Date();
+        // const subject = "Welcome to IFSP BANK PLC";
+        // const body = "Your Account has been created at : " + loginTime;
     
-        await this.emailService.sendMail(myobj.email, subject, body);
+        // await this.emailService.sendMail(myobj.email, subject, body);
     
         return myobj;
     
