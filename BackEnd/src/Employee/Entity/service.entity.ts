@@ -9,13 +9,13 @@ export class ServiceEntity {
     @Column({ name: 'ServiceType', type: 'varchar', length: 50 })
     name: string;
 
-    @Column({ name: 'Document' })
+    @Column({ name: 'Document', type: 'varchar' })
     filename: string;
 
     @Column({ name: 'Status', default: false })
     status: boolean;
 
-    @CreateDateColumn({ name: 'ApplicationTime' })
+    @CreateDateColumn({ name: 'ApplicationTime', type: 'date' })
     applicationTime: Date;
 
     @ManyToOne(() => AccountEntity, account => account.services)

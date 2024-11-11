@@ -22,10 +22,10 @@ export class AccountEntity {
     @Column({ name: 'Phone', type: 'varchar' })
     phone: string;
 
-    @Column({ name: 'Address' })
+    @Column({ name: 'Address', type: 'varchar' })
     address: string;
 
-    @Column({ name: 'NomineePicture' })
+    @Column({ name: 'NomineePicture', type: 'varchar' })
     filename: string;
 
     @Column({ name: 'AccountType', type: 'varchar', nullable: true })

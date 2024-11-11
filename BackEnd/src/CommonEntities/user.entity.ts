@@ -6,32 +6,29 @@ import { randomBytes } from "crypto";
 
 @Entity("Users")
 export class Users {
-    @PrimaryColumn()
+    @PrimaryColumn({type:'varchar', name: "UserId" })
     userId: string;
 
-    @Column()
-    FullName: string;
+    @Column({type:'varchar', name: "FullName" })
+    fullName: string;
 
-    @Column({ name: "Email" })
-    Email: string;
+    @Column({type:'varchar', name: "Gender" })
+    gender: string;
 
-    @Column()
-    Gender: string;
+    @Column({ type: 'date',name:"DOB" })
+    dob: Date;
 
-    @Column({ type: 'date' })
-    DOB: Date;
+    @Column({type:'varchar', name: "NID" })
+    nid: string;
 
-    @Column()
-    NID: string;
+    @Column({type:'varchar', name: "Phone" })
+    phone: string;
 
-    @Column()
-    Phone: string;
+    @Column({type:'varchar', name: "Address" })
+    address: string;
 
-    @Column()
-    Address: string;
-
-    @Column()
-    FileName: string; // PictureName
+    @Column({type:'varchar', name: "FileName" })
+    filename: string; // PictureName
 
     @OneToOne(() => Authentication, Authentication => Authentication.User, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
     @JoinColumn({ name: "Email" })
@@ -46,7 +43,23 @@ export class Users {
     @BeforeInsert()
     generateID() {
         const randomBytesBuffer = randomBytes(4);
-        this.userId = "U-" + parseInt(randomBytesBuffer.toString('hex'), 16) % 1000000; // 6 digit -> 10e6
+        this.userId= "U-" + parseInt(randomBytesBuffer.toString('hex'), 16) % 1000000; //6 digit -> 10e6
+    }
+    
+    //used manually
+    generateId(): string {
+        // Custom logic to generate a 6-digit number
+        const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
+        this.userId = 'E-' + randomNumber;
+        return this.userId;
+    }
+    
+    //used manually
+    generateUserId(): string {
+        // Custom logic to generate a 6-digit number
+        const randomNumber = Math.floor(100000 + Math.random() * 900000).toString();
+        this.userId = 'U-' + randomNumber;
+        return this.userId;
     }
 }
 
