@@ -49,19 +49,19 @@ export class RegistrationUserDto{
 
 
 
-  //  @Matches(/^(male|female)$/i)
+   @Matches(/^(male|female)$/i)
     nomineeGender: string;
 
     @IsNotEmpty()
-    nomineedob: Date;
+    nomineeDob: Date;
 
     @IsNotEmpty()
     @Matches(/^\d{8}(?:\d{8})?$/)
-    nomineenNid: string;
+    nomineeNid: string;
 
     @IsNotEmpty()
     @Matches(/^01\d{9}$/)
-    nomineephone: string;
+    nomineePhone: string;
 
     @IsNotEmpty()
    nomineeAddress: string;

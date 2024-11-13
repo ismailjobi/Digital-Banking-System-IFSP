@@ -15,6 +15,7 @@ export class ServiceEntity {
     @Column({ name: 'Status', default: false })
     status: boolean;
 
+
     @CreateDateColumn({ name: 'ApplicationTime', type: 'date' })
     applicationTime: Date;
 

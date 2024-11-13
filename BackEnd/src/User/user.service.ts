@@ -51,9 +51,9 @@ export class UserService {
         account.userId = userRegistration; // Assuming userId in AccountEntity is of type UserRegistrationEntity
         account.name = myobj.nomineeName;
         account.gender = myobj.nomineeGender;
-        account.dob = myobj.nomineedob;
-        account.nid = myobj.nomineenNid;
-        account.phone = myobj.nomineephone;
+        account.dob = myobj.nomineeDob;
+        account.nid = myobj.nomineeNid;
+        account.phone = myobj.nomineePhone;
         account.address = myobj.nomineeAddress;
         account.accountNumber = account.generateAccountNumber();
         account.filename = myobj.nomineeFilename;
@@ -81,6 +81,24 @@ export class UserService {
         return myobj;
     
       }
+
+      //Get User Profile Picture
+
+      async getUserProfilePictureById(userId: string): Promise<{ name: string; fileName: string }> {
+        const user = await this.userRepository.findOne({ select: { filename: true , fullName: true }, where: { userId: userId } });
+        if (!user || !user.filename) {
+           throw new NotFoundException('User profile picture not found');
+        }
+        return { name: user.fullName, fileName: user.filename };
+      
+      }
+      
+//Get User Profile
+async getProfile(id:string):Promise<Users[]>{
+  // return this.userRepository.find({select:{name:true,gender:true},
+  // where:[{userId:id}]})
+   return this.userRepository.find({ where: {userId: id}});
+ }
 
 }
 
