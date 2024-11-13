@@ -132,18 +132,22 @@ export class EmployeeService {
       if (!account) {
         throw new NotFoundException('Account not found');
       }
-
+      
       // Check restricted fields
-      if (account.Authentication.Email !== myobj.email) {
+      if (myobj.email !==null && account.Authentication.Email !== myobj.email) {
         throw new ForbiddenException("Email cannot be changed by account officer");
       }
 
-      if (account.nid !== myobj.nid) {
+      if (myobj.nid !==null && account.nid !== myobj.nid) {
         throw new ForbiddenException("NID cannot be changed by account officer");
       }
 
-      if (account.Accounts.accountNumber !== myobj.accountNumber) {
+      if (myobj.accountNumber !==null && account.Accounts.accountNumber !== myobj.accountNumber) {
         throw new ForbiddenException("Account Number cannot be changed by account officer");
+      }
+
+      if (myobj.nomineenNid !==null && account.Accounts.nomineenNid !== myobj.nomineenNid) {
+        throw new ForbiddenException("Nominee NID cannot be changed by account officer");
       }
 
       // Updating allowed fields only
@@ -155,7 +159,7 @@ export class EmployeeService {
       account.filename = myobj.employeeFilename;
 
       // Only update specific fields in the Authentication entity
-      account.Authentication.Password = myobj.password || account.Authentication.Password;
+      account.Authentication.Password = account.Authentication.Password;
       account.Authentication.Active = myobj.isActive;
 
       // Update only allowed fields in AccountEntity
