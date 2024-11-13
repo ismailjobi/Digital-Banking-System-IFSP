@@ -71,6 +71,9 @@ export class EmployeeDTO {
     accountType: string;
     
     @Optional()
+    accountStatus :boolean;
+    
+    @Optional()
     balance: number;
   accountNumber: any;
 }

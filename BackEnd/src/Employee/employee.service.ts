@@ -12,6 +12,7 @@ import { Users } from "src/CommonEntities/user.entity";
 import { Authentication } from "src/Authentication/Entity/auth.entity";
 import { Transactions } from "./Entity/transaction.entity";
 import { AdminService } from "src/Administrator/admin.service";
+import { EmployeeUpdateDTO } from "./DTO/employeeupdate.dto";
 
 @Injectable()
 export class EmployeeService {
@@ -109,7 +110,10 @@ export class EmployeeService {
 
   async getAccountInfo(): Promise<Authentication[] | string> {
     try {
-      const accounts = await this.autheRepo.find({ where: { roleId: await this.adminService.getRoleIdByName("accountant") }, relations: ['User'] });
+      const accounts = await this.autheRepo.find({
+        where: { roleId: await this.adminService.getRoleIdByName("accountant") },
+        relations: ['User', 'User.Accounts']
+      });
       if (!accounts || accounts.length === 0) {
         throw new NotFoundException('There Is No Account Found');
       }
@@ -121,70 +125,104 @@ export class EmployeeService {
     }
   }
 
-  async updateEmployee(userId: string, myobj: EmployeeDTO): Promise<Users | string> {
+  async updateEmployee(userId: string, myobj: EmployeeUpdateDTO): Promise<Users | string> {
     try {
+      console.log(userId);
+      console.log(myobj);
+
       // Find the existing employee by userId with associated entities
-      const account = await this.employeeRep.findOne({
-        where: { userId: userId },
-        relations: ['Authentication', 'Accounts']
-      });
-
+      const account = await this.employeeRepo.findOne({ where: { userId: userId }, relations: ['Authentication'] });
+      console.log(account);
       if (!account) {
-        throw new NotFoundException('Account not found');
+        return 'Account not found';
       }
-      
+
       // Check restricted fields
-      if (myobj.email !==null && account.Authentication.Email !== myobj.email) {
-        throw new ForbiddenException("Email cannot be changed by account officer");
+      if (myobj.email !== null && account.Authentication.Email !== myobj.email) {
+        return "Email cannot be changed by account officer";
       }
 
-      if (myobj.nid !==null && account.nid !== myobj.nid) {
-        throw new ForbiddenException("NID cannot be changed by account officer");
-      }
-
-      if (myobj.accountNumber !==null && account.Accounts.accountNumber !== myobj.accountNumber) {
-        throw new ForbiddenException("Account Number cannot be changed by account officer");
-      }
-
-      if (myobj.nomineenNid !==null && account.Accounts.nomineenNid !== myobj.nomineenNid) {
-        throw new ForbiddenException("Nominee NID cannot be changed by account officer");
+      if (myobj.nid !== null && account.nid !== myobj.nid) {
+        return "NID cannot be changed by account officer";
       }
 
       // Updating allowed fields only
-      account.fullName = myobj.name;
-      account.gender = myobj.gender;
-      account.dob = myobj.dob;
-      account.phone = myobj.phone;
-      account.address = myobj.address;
-      account.filename = myobj.employeeFilename;
+      account.fullName = myobj.name || account.fullName;
+      account.gender = myobj.gender || account.gender;
+      account.dob = myobj.dob || account.dob;
+      account.phone = myobj.phone || account.phone;
+      account.address = myobj.address || account.address;
+      account.filename = myobj.employeeFilename || account.filename;
 
       // Only update specific fields in the Authentication entity
       account.Authentication.Password = account.Authentication.Password;
-      account.Authentication.Active = myobj.isActive;
-
-      // Update only allowed fields in AccountEntity
-      account.Accounts.name = myobj.nomineeName;
-      account.Accounts.gender = myobj.nomineeGender;
-      account.Accounts.dob = myobj.nomineedob;
-      account.Accounts.phone = myobj.nomineephone;
-      account.Accounts.address = myobj.nomineeAddress;
-      account.Accounts.accountType = myobj.accountType;
+      account.Authentication.Active = myobj.isActive ?? account.Authentication.Active;
 
       // Save updates to repositories
       await this.autheRepo.save(account.Authentication);
       await this.employeeRepo.save(account);
-      await this.accountRepo.save(account.Accounts);
 
-      // Retrieve the updated account information with relations
-      const updatedInfo = await this.employeeRep.findOne({
+      // Retrieve the updated account information with relations, excluding the password
+      const updatedInfo = await this.employeeRepo.findOne({
         where: { userId: userId },
-        relations: ['Authentication', 'Accounts']
+        relations: ['Authentication'],
       });
+
+      if (updatedInfo) {
+        delete updatedInfo.Authentication.Password;  // Remove the password
+      }
 
       return updatedInfo;
     } catch (error) {
-      // Handle any errors
       throw new Error(`Error occurred while updating employee: ${error.message}`);
+    }
+  }
+
+
+  async getAccountInfoById(userId: string): Promise<Users | string> {
+    try {
+      const account = await this.employeeRepo.findOne({ where: { userId: userId }, relations: ['Authentication'] });
+      const roleId = account.Authentication.roleId;
+      const dbRoleId = await this.adminService.getRoleIdByName("admin");
+      if (!account || roleId == dbRoleId) {
+        throw new NotFoundException('There Is No Account Found');
+      }
+      if (roleId != dbRoleId) {
+        return account;
+      }
+    } catch (error) {
+      // Here We Handle The Error 
+      throw new Error("Error occurred while fetching account information.");
+    }
+  }
+
+  async deleteEmployee(userId: string): Promise<void|string> {
+    // Find the account and associated authentication details
+    const account = await this.employeeRepo.findOne({ where: { userId }, relations: ['Authentication'] });
+    if (!account) {
+      throw new NotFoundException('Account not found');
+    }
+
+    try {
+      // Check if the user is an admin by comparing role IDs
+      console.log(account.Authentication.roleId);
+      const adminRoleId = await this.adminService.getRoleIdByName("admin");
+      console.log(adminRoleId);
+      if (adminRoleId !== null && account.Authentication.roleId !== adminRoleId) {
+        // If not an admin, set account to inactive
+        account.Authentication.Active = false;
+        console.log('authRepo:', account.Authentication); // Ensure this outputs a valid object
+        await this.autheRepo.save(account.Authentication);  // Save deactivation to the database
+        console.log(`Account for user ${userId} set to inactive`);
+        return`Account for user ${userId} set to inactive`;
+      } else {
+        console.log(`Admin account for user ${userId} is not deactivated`);
+        return `Admin account for user ${userId} is not deactivated`;
+      }
+    } catch (error) {
+      // Log and propagate the error
+      console.error('Error occurred while deleting user:', error);
+      throw new Error('Error occurred while attempting to deactivate or delete account.');
     }
   }
 

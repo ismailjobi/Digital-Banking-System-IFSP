@@ -8,6 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { Roles } from '../CustomDecorator/roles.decorator';
 import { Authentication } from "src/Authentication/Entity/auth.entity";
 import { Users } from "src/CommonEntities/user.entity";
+import { EmployeeUpdateDTO } from "./DTO/employeeupdate.dto";
 
 
 @Controller('/api/employee')
@@ -97,26 +98,36 @@ export class EmployeeController {
         }),
     }))
     @UsePipes(new ValidationPipe())
-    async updateEmployee(@Param('userId') userId: string, myobj: EmployeeDTO,
+    async updateEmployee(@Param('userId') userId: string,@Body() myobj: EmployeeUpdateDTO,
         @UploadedFiles() files: { employeePicture?: Express.Multer.File[], nomineePicture?: Express.Multer.File[] }
     ): Promise<Users | string> {
 
-        if (myobj.password) {
-            const salt = await bcrypt.genSalt();
-            myobj.password = await bcrypt.hash(myobj.password, salt);
-        }
-
         // Debugging: Log files and body
         console.log('Files object:', files);
+        console.log(myobj);
 
         // Assign the uploaded file names to DTO fields
         if (files.employeePicture && files.employeePicture[0]) {
             myobj.employeeFilename = files.employeePicture[0].filename;
         }
-        if (files.nomineePicture && files.nomineePicture[0]) {
-            myobj.nomineeFilename = files.nomineePicture[0].filename;
-        }
+        
         return this.employeeService.updateEmployee(userId, myobj);
+    }
+
+    //=>[4]Get Accountent Account By ID
+    @Get('/getEmployeeAccount/:userId')
+    // @UseGuards(AuthGuard)
+    // @Roles('account officer')
+    getEmployeeAccountInfoById(@Param('userId') userId: string): Promise<Users | string> {
+        return this.employeeService.getAccountInfoById(userId);
+    }
+
+    //=>[5] Delete Accountent Account
+    @Patch('deleteEmployee/:userId')
+    //@UseGuards(AuthGuard)
+    //@Roles('account officer')
+    deleteEmployee(@Param('userId') userId: string): object {
+        return this.employeeService.deleteEmployee(userId);
     }
 
 }
