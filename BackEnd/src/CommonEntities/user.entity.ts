@@ -40,11 +40,11 @@ export class Users {
     @OneToMany(() => Transactions, Transactions => Transactions.userId)
     Transactions: Transactions[];
 
-    @BeforeInsert()
-    generateID() {
-        const randomBytesBuffer = randomBytes(4);
-        this.userId= "U-" + parseInt(randomBytesBuffer.toString('hex'), 16) % 1000000; //6 digit -> 10e6
-    }
+    // @BeforeInsert()
+    // generateID() {
+    //     const randomBytesBuffer = randomBytes(4);
+    //     this.userId= "U-" + parseInt(randomBytesBuffer.toString('hex'), 16) % 1000000; //6 digit -> 10e6
+    // }
     
     //used manually
     generateId(): string {

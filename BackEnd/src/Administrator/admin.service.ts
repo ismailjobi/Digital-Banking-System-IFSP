@@ -35,6 +35,7 @@ export class AdminService {
     }
 
     async getRoleIdByName(name: string): Promise<string> {
+        console.log(name);
         let exData = await this.roleRepository.find({
             where: { Name: name.toLowerCase() }
         });
