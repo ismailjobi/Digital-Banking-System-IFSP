@@ -13,6 +13,7 @@ import { Authentication } from "src/Authentication/Entity/auth.entity";
 import { Transactions } from "./Entity/transaction.entity";
 import { AdminService } from "src/Administrator/admin.service";
 import { EmployeeUpdateDTO } from "./DTO/employeeupdate.dto";
+import { FormerEmployee } from "./Entity/formeremployee.entity";
 
 @Injectable()
 export class EmployeeService {
@@ -22,6 +23,7 @@ export class EmployeeService {
     @InjectRepository(AccountEntity) private accountRepo: Repository<AccountEntity>,
     @InjectRepository(Transactions) private transactionRepo: Repository<Transactions>,
     @InjectRepository(ServiceEntity) private serviceRepo: Repository<ServiceEntity>,
+    @InjectRepository(FormerEmployee) private formerEmployeeRepo: Repository<FormerEmployee>,
     private adminService: AdminService,
     private jwtService: JwtService,
     private emailService: EmailService
@@ -196,7 +198,7 @@ export class EmployeeService {
     }
   }
 
-  async deleteEmployee(userId: string): Promise<void|string> {
+  async deleteEmployee(userId: string): Promise<void | string> {
     // Find the account and associated authentication details
     const account = await this.employeeRepo.findOne({ where: { userId }, relations: ['Authentication'] });
     if (!account) {
@@ -205,24 +207,46 @@ export class EmployeeService {
 
     try {
       // Check if the user is an admin by comparing role IDs
-      console.log(account.Authentication.roleId);
       const adminRoleId = await this.adminService.getRoleIdByName("admin");
-      console.log(adminRoleId);
       if (adminRoleId !== null && account.Authentication.roleId !== adminRoleId) {
-        // If not an admin, set account to inactive
-        account.Authentication.Active = false;
-        console.log('authRepo:', account.Authentication); // Ensure this outputs a valid object
-        await this.autheRepo.save(account.Authentication);  // Save deactivation to the database
-        console.log(`Account for user ${userId} set to inactive`);
-        return`Account for user ${userId} set to inactive`;
+        console.log("Hello");
+        // Create a new FormerEmployee record
+        const formerEmployee = new FormerEmployee();
+        formerEmployee.userId = account.userId;
+        formerEmployee.fullName = account.fullName;
+        formerEmployee.gender = account.gender;
+        formerEmployee.dob = account.dob;
+        formerEmployee.nid = account.nid;
+        formerEmployee.phone = account.phone;
+        formerEmployee.address = account.address;
+        formerEmployee.filename = account.filename;
+        formerEmployee.departureDate = new Date(); // Set current date as departure date
+        formerEmployee.formerRole = account.Authentication.roleId;
+
+        // Update original Authentication role to "user"
+        const userRoleId = await this.adminService.getRoleIdByName("user");
+
+        if (userRoleId && account.Authentication.roleId !== userRoleId) {
+          account.Authentication.roleId = userRoleId;
+          try {
+            await this.autheRepo.save(account.Authentication);  // Save updated role
+            // Save the former employee record
+            await this.formerEmployeeRepo.save(formerEmployee);
+            return `Account of employee ${userId} transferred to user account`;
+          } catch (error) {
+            console.error("Failed to save Authentication:", error.message);
+            throw new Error("Failed to save the updated Authentication role");
+          }
+        }else{
+          return `Account of employee ${userId} please check role again.`;
+        }
+
       } else {
-        console.log(`Admin account for user ${userId} is not deactivated`);
-        return `Admin account for user ${userId} is not deactivated`;
+        return `Admin account of employee ${userId} cannot be transferred to user account`;
       }
     } catch (error) {
-      // Log and propagate the error
-      console.error('Error occurred while deleting user:', error);
-      throw new Error('Error occurred while attempting to deactivate or delete account.');
+      console.error("Failed to save Autentication:", error.message);
+      throw new Error('Error occurred while attempting to transfer account.');
     }
   }
 

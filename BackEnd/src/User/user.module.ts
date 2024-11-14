@@ -14,6 +14,7 @@ import { Users } from 'src/CommonEntities/user.entity';
 import { Authentication } from 'src/Authentication/Entity/auth.entity';
 import { Transactions } from 'src/Employee/Entity/transaction.entity';
 import { AdminModule } from 'src/Administrator/admin.module';
+import { FormerEmployee } from 'src/Employee/Entity/formeremployee.entity';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AdminModule } from 'src/Administrator/admin.module';
       AccountEntity,
       Transactions,
       ServiceEntity,
+      FormerEmployee
     ]),
     JwtModule.register({
       global: true,
