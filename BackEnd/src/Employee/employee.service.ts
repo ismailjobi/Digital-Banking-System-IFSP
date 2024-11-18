@@ -14,6 +14,7 @@ import { Transactions } from "./Entity/transaction.entity";
 import { AdminService } from "src/Administrator/admin.service";
 import { EmployeeUpdateDTO } from "./DTO/employeeupdate.dto";
 import { FormerEmployee } from "./Entity/formeremployee.entity";
+import { changePasswordDTO } from "./DTO/changepassword.dto";
 
 @Injectable()
 export class EmployeeService {
@@ -237,7 +238,7 @@ export class EmployeeService {
             console.error("Failed to save Authentication:", error.message);
             throw new Error("Failed to save the updated Authentication role");
           }
-        }else{
+        } else {
           return `Account of employee ${userId} please check role again.`;
         }
 
@@ -249,5 +250,111 @@ export class EmployeeService {
       throw new Error('Error occurred while attempting to transfer account.');
     }
   }
+
+  async getProfile(userEmail: string): Promise<Authentication | string> {
+    try {
+      const account = await this.autheRepo.findOne({ where: { Email: userEmail }, relations: ['User'] });
+
+      if (!account) {
+        throw new NotFoundException('User not found');
+      }
+      delete account.Password;  // Remove the password
+      return account;
+    } catch (error) {
+      // Here We Handle The Error 
+      throw new Error("Error occurred while getting user profile.");
+    }
+  }
+
+  async updateProfile(userEmail: string, profileDto: profileDTO): Promise<Authentication | string> {
+    try {
+      // Find the user and their authentication details
+      const user = await this.autheRepo.findOne({ where: { Email: userEmail }, relations: ['User'] });
+      console.log(profileDto);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      // Update allowed fields
+      user.User.fullName = profileDto.name || user.User.fullName;
+      user.User.gender = profileDto.gender || user.User.gender;
+      user.User.dob = profileDto.dob ? new Date(Date.parse(profileDto.dob)) : user.User.dob;
+      user.User.phone = profileDto.phone || user.User.phone;
+      user.User.address = profileDto.address || user.User.address;
+
+      // Check if NID update is attempted
+      if (profileDto.nid && profileDto.nid !== user.User.nid) {
+        throw new BadRequestException('National ID (NID) cannot be changed directly. Please contact support.');
+      }
+
+      // Check if email update is attempted
+      if (profileDto.email && profileDto.email !== user.Email) {
+        throw new BadRequestException('Email cannot be changed.');
+      }
+
+      // Handle optional profile image update
+      if (profileDto.filename && profileDto.filename !== user.User.filename) {
+        user.User.filename = profileDto.filename;
+      }
+
+      // Check if phone number already exists for another user
+      if (profileDto.phone) {
+        const existingPhone = await this.employeeRepo.findOne({ where: { phone: profileDto.phone } });
+        if (existingPhone && existingPhone.userId !== user.User.userId) {
+          throw new BadRequestException('This phone number is already associated with another account.');
+        }
+      }
+
+      // Save the updated user details
+      await this.employeeRepo.save(user.User);
+
+      // Fetch and return the updated user details
+      const updatedUser = await this.autheRepo.findOne({ where: { Email: userEmail }, relations: ['User'] });
+      delete updatedUser.Password;  // Remove the password
+      return updatedUser;
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Error updating profile:', error);
+
+      // Throw a generic error to the client
+      throw new Error('An error occurred while updating the profile. Please try again.');
+    }
+  }
+
+  async passwordChange(userEmail: string, myobj: changePasswordDTO): Promise<string> {
+    try {
+      // Check if the user exists
+      const account = await this.autheRepo.findOne({ where: { Email: userEmail } });
+      if (!account) {
+        throw new NotFoundException('User not found');
+      }
+      // Compare the current password with the stored password
+      const isMatch = await bcrypt.compare(myobj.currentPassword, account.Password);
+      console.log(isMatch);
+      console.log(myobj);
+      if (!isMatch) {
+        return 'Current password is incorrect';
+      }
+
+      // Check if new password and confirm password match
+      if (myobj.newPassword !== myobj.confirmPassword) {
+        return 'New password and confirm password do not match';
+      }
+
+      // Salt and hash the new password
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(myobj.newPassword, salt);
+
+      // Update the password in the database
+      account.Password = hashedPassword;
+      await this.autheRepo.save(account);
+
+      return 'Password successfully changed.';
+    } catch (error) {
+      // For unexpected errors, throw a general error
+      throw new Error('An unexpected error occurred while changing the password.');
+    }
+  }
+
 
 }
