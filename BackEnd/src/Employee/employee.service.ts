@@ -15,6 +15,10 @@ import { AdminService } from "src/Administrator/admin.service";
 import { EmployeeUpdateDTO } from "./DTO/employeeupdate.dto";
 import { FormerEmployee } from "./Entity/formeremployee.entity";
 import { changePasswordDTO } from "./DTO/changepassword.dto";
+import * as Handlebars from 'handlebars';
+import * as fs from 'fs';
+import * as path from 'path';
+import { UpdateNomineeDto } from "./DTO/nomineeupdate.dto";
 
 @Injectable()
 export class EmployeeService {
@@ -90,6 +94,13 @@ export class EmployeeService {
       if (existNomineeNid) {
         return "This NID already exists";
       }
+      // Check if phone number already exists for another user
+      if (myobj.phone) {
+        const existingPhone = await this.employeeRepo.findOne({ where: { phone: myobj.phone } });
+        if (existingPhone && existingPhone.userId !== employeeRegistration.userId) {
+          throw new BadRequestException('This phone number is already associated with another account.');
+        }
+      }
       console.log('Checking ...');
       if (!existNID && !existEmail && !existNomineeNid) {
         await this.autheRepo.save(employeeRegistration.Authentication);
@@ -149,6 +160,14 @@ export class EmployeeService {
         return "NID cannot be changed by account officer";
       }
 
+      // Check if phone number already exists for another user
+      if (myobj.phone) {
+        const existingPhone = await this.employeeRepo.findOne({ where: { phone: myobj.phone } });
+        if (existingPhone && existingPhone.userId !== account.userId) {
+          throw new BadRequestException('This phone number is already associated with another account.');
+        }
+      }
+
       // Updating allowed fields only
       account.fullName = myobj.name || account.fullName;
       account.gender = myobj.gender || account.gender;
@@ -178,6 +197,39 @@ export class EmployeeService {
       return updatedInfo;
     } catch (error) {
       throw new Error(`Error occurred while updating employee: ${error.message}`);
+    }
+  }
+
+  async updateEmployeeNominee(accountNumber: number, myobj: UpdateNomineeDto): Promise<AccountEntity | string> {
+    try {
+      console.log('Account Number:', accountNumber);
+      console.log('Nominee Data:', myobj);
+
+      // Find the existing account
+      const account = await this.accountRepo.findOne({ where: { accountNumber: accountNumber } });
+
+      if (!account) {
+        throw new BadRequestException('Account not found');
+      }
+
+      // Validate restricted fields - ensure the NID cannot be changed
+      if (account.nid && account.nid !== myobj.nomineenNid) {
+        throw new BadRequestException('NID cannot be changed');
+      }
+
+      // Update allowed fields
+      account.nomineeName = myobj.nomineeName || account.nomineeName;
+      account.nomineeGender = myobj.nomineeGender || account.nomineeGender;
+      account.nomineeDob = myobj.nomineedob || account.nomineeDob;
+      account.nomineeAddress = myobj.nomineeAddress || account.nomineeAddress;
+      account.nomineeName = myobj.nomineeFilename || account.filename;
+
+      // Save the updated account information
+      await this.accountRepo.save(account);
+
+      return account;
+    } catch (error) {
+      throw new Error(`Error updating nominee information: ${error.message}`);
     }
   }
 
@@ -355,6 +407,166 @@ export class EmployeeService {
       throw new Error('An unexpected error occurred while changing the password.');
     }
   }
+
+  async getInactiveemployeeAccount(): Promise<string | any[]> {
+    try {
+      const userRoleId = await this.adminService.getRoleIdByName("accountant");
+      const accounts = await this.autheRepo.find({ where: { roleId: userRoleId, Active: false }, relations: ['User'] });
+
+      if (!accounts || accounts.length === 0) {
+        throw new NotFoundException('No inactive user accounts found');
+      }
+
+      return accounts;
+    } catch (error) {
+      // Here We Handle The Error 
+      throw new Error("Error occurred while getting inactive user accounts.");
+    }
+  }
+
+  async getInactiveUserAccount(): Promise<string | any[]> {
+    try {
+      const userRoleId = await this.adminService.getRoleIdByName("user");
+      const accounts = await this.autheRepo.find({ where: { roleId: userRoleId, Active: false }, relations: ['User'] });
+
+      if (!accounts || accounts.length === 0) {
+        throw new NotFoundException('No inactive user accounts found');
+      }
+
+      return accounts;
+    } catch (error) {
+      // Here We Handle The Error 
+      throw new Error("Error occurred while getting inactive user accounts.");
+    }
+  }
+
+  async activateUserAccount(userId: string): Promise<string> {
+    try {
+      const account = await this.employeeRepo.findOne({
+        where: { userId },
+        relations: ['Authentication', 'Accounts'],
+      });
+
+      if (!account) {
+        throw new NotFoundException('No account found for the given user ID');
+      }
+
+      // Mark the account inactive
+      account.Authentication.Active = false;
+
+      // Prepare data for the template
+      const templateData = {
+        Name: account.fullName,
+        Accounts: account.Accounts.map((acc) => ({
+          AccountNumber: `${acc.accountNumber.toString().slice(0, 2)}****${acc.accountNumber
+            .toString()
+            .slice(-2)}`,
+          AccountType: acc.accountType,
+          Balance: `$${acc.balance.toFixed(2)}`,
+        })),
+      };
+
+      console.log(templateData); // Ensure this contains correct data
+
+      // Load and compile the Handlebars template
+      const templatePath = path.join(__dirname, '../Templates/account-activation.html');
+      const templateSource = fs.readFileSync(templatePath, 'utf8');
+      const compiledTemplate = Handlebars.compile(templateSource);
+
+      // Render the HTML content
+      const emailContent = compiledTemplate(templateData);
+
+      // Send the email with raw HTML
+      await this.emailService.sendMail(
+        account.Authentication.Email,
+        'Account Activation Notification',
+        emailContent, // Pass the raw HTML
+      );
+
+      // Update the database
+      await this.autheRepo.save(account.Authentication);
+
+      return "UserID: " + userId + " is now active.";
+    } catch (error) {
+      // Here We Handle The Error 
+      throw new Error("Error occurred while activating user account.");
+    }
+  }
+
+  async deactivateUserAccount(userId: string): Promise<string> {
+    try {
+      const account = await this.employeeRepo.findOne({
+        where: { userId },
+        relations: ['Authentication', 'Accounts'],
+      });
+
+      if (!account) {
+        throw new NotFoundException('No account found for the given user ID');
+      }
+
+      // Mark the account inactive
+      account.Authentication.Active = false;
+
+      // Prepare data for the template
+      const templateData = {
+        Name: account.fullName,
+        Accounts: account.Accounts.map((acc) => ({
+          AccountNumber: `${acc.accountNumber.toString().slice(0, 2)}****${acc.accountNumber
+            .toString()
+            .slice(-2)}`,
+          AccountType: acc.accountType,
+          Balance: `$${acc.balance.toFixed(2)}`,
+        })),
+      };
+
+      console.log(templateData); // Ensure this contains correct data
+
+      // Load and compile the Handlebars template
+      const templatePath = path.join(__dirname, '../Templates/account-deactivation.html');
+      const templateSource = fs.readFileSync(templatePath, 'utf8');
+      const compiledTemplate = Handlebars.compile(templateSource);
+
+      // Render the HTML content
+      const emailContent = compiledTemplate(templateData);
+
+      // Send the email with raw HTML
+      await this.emailService.sendMail(
+        account.Authentication.Email,
+        'Account Deactivation Notification',
+        emailContent, // Pass the raw HTML
+      );
+
+      // Update the database
+      await this.autheRepo.save(account.Authentication);
+
+      return `UserID: ${userId} is now deactivated.`;
+    } catch (error) {
+      throw new Error(error.message || 'Error occurred while deactivating user account.');
+    }
+  }
+
+  async getUserAccountInfo(): Promise<string | any[]> {
+    try {
+      const subString = "U-";
+      const accounts = await this.employeeRepo.find({ where: { userId: Like(subString + '%') }, relations: ['Authentication', 'Accounts'] });
+
+      if (!accounts || accounts.length === 0) {
+        throw new NotFoundException('No user accounts found');
+      }
+
+      // Remove Password from Authentication for each account
+      accounts.forEach((account) => {
+        if (account.Authentication) {
+          delete account.Authentication.Password;
+        }
+      });
+      return accounts;
+    } catch (error) {
+      // Here We Handle The Error 
+      throw new Error("Error occurred while getting user account information.");
+    }
+  }
+
 
 
 }

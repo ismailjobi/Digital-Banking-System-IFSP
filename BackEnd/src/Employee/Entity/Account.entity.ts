@@ -36,6 +36,10 @@ export class AccountEntity {
 
     @Column({ name: 'AccountStatus', default: true })
     accountStatus: boolean;
+  nomineeName: any;
+  nomineeGender: any;
+  nomineeDob: any;
+  nomineeAddress: any;
 
     @BeforeInsert()
     generateAccountNumber(): number {
