@@ -10,7 +10,7 @@ export class EmailService {
       service: 'gmail',
       auth: {
         user: 'ifspbankplc@gmail.com',
-        pass: 'kpto phvy genq fquz',
+        pass: 'rubp ylor rqgk qchu',
     },
     });
   }

@@ -24,6 +24,9 @@ export class Transactions {
     @Column({ name: 'RoutingNumber' })
     routingNumber: number;
 
+    @Column({name:'AccountType',length: 100,type: "varchar"})
+    accountType: string;
+
     @Column({ name: 'TransferType', length: 20, type: "varchar" })
     transferType: string;
 

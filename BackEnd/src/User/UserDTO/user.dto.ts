@@ -34,7 +34,7 @@ export class RegistrationUserDto{
     @IsNotEmpty()
     address:string;
    
-    filename: string;
+    UserFileName: string;
    // @Optional()    isActive:boolean;
     @IsNotEmpty()
    // @Matches(/[A-Za-z\d!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]{8,}$/)
@@ -66,7 +66,7 @@ export class RegistrationUserDto{
     @IsNotEmpty()
    nomineeAddress: string;
     
-    nomineeFilename: string;
+    nomineeFileName: string;
 
     @Matches(/^(current|saving)$/i)
     accountType: string;

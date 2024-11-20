@@ -31,6 +31,7 @@ export class AuthGuard implements CanActivate {
             // Check if user has one of the required roles
             const requiredRoles = this.reflector.get<string[]>('role', context.getHandler()); // Fetch roles metadata
             console.log('Required Roles:', requiredRoles);
+            console.log('Request user from guard:', request['user']);
             if (!requiredRoles || requiredRoles.length === 0) {
                 // No roles required, access granted
                 return true;

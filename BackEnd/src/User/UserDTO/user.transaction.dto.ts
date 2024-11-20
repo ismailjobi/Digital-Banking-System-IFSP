@@ -15,7 +15,7 @@ export class transactionDto{
     receiverAccount: number ;
 
     @IsString()
-    holderName: string;
+    receiverName: string;
 
     @IsString()
     accountType: string;

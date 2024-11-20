@@ -4,7 +4,7 @@ import { loginDTO } from '../DTO/login.dto';
 import { Request } from 'express';
 import * as bcrypt from 'bcrypt';
 import { MulterError, diskStorage } from "multer";
-import { FilesInterceptor } from "@nestjs/platform-express";
+import { FileFieldsInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { RegistrationUserDto } from 'src/User/UserDTO/user.dto';
 
 @Controller('/api/auth')
@@ -13,37 +13,43 @@ export class AuthController {
 
   //User Registration Route
   @Post('registration')
-  @UseInterceptors(FilesInterceptor('myFiles', 2, {
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'UserFilename', maxCount: 1 },
+    { name: 'nomineeFileName', maxCount: 1 },
+], {
     fileFilter: (req, file, cb) => {
-      if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/))
-        cb(null, true);
-      else {
-        cb(new MulterError('LIMIT_UNEXPECTED_FILE', 'image'), false);
-      }
+        if (file.originalname.match(/^.*\.(jpg|webp|png|jpeg)$/)) {
+            cb(null, true);
+        } else {
+            cb(new MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname), false);
+        }
     },
     limits: { fileSize: 300000000 },
     storage: diskStorage({
-      destination: './upload',
-      filename: function (req, file, cb) {
-        cb(null, Date.now() + file.originalname)
-      },
-    })
-  }))
+        destination: './upload',
+        filename: (req, file, cb) => {
+            cb(null, `${Date.now()}-${file.originalname}`);
+        },
+    }),
+}))
 
 
   @UsePipes(new ValidationPipe)
-  async createAccount(@Body() myobj: RegistrationUserDto, @UploadedFiles() myFiles: Express.Multer.File[]): Promise<RegistrationUserDto | string> {
+  async createAccount(@Body() myobj: RegistrationUserDto, @UploadedFiles() myFiles:  { UserFilename?: Express.Multer.File[], nomineeFileName?: Express.Multer.File[] } ): Promise<RegistrationUserDto | string>
+   {
     const salt = await bcrypt.genSalt();
     const hashedpassword = await bcrypt.hash(myobj.password, salt);
     myobj.password = hashedpassword;
 
-    if (myFiles.length !== 2) {
+    console.log(myFiles.nomineeFileName);
+    console.log(myFiles.UserFilename);
 
-      throw new Error('Please upload exactly two files');
-    }
-
-    myobj.filename = myFiles[0].filename; // First file
-    myobj.nomineeFilename = myFiles[1].filename; // Second file (nominee file)
+    if (myFiles.UserFilename && myFiles.UserFilename[0]) {
+      myobj.UserFileName = myFiles.UserFilename[0].filename;
+  }
+  if (myFiles.nomineeFileName && myFiles.nomineeFileName[0]) {
+      myobj.nomineeFileName = myFiles.nomineeFileName[0].filename;
+  }
 
     return this.authService.signUp(myobj);
   }
@@ -53,6 +59,7 @@ export class AuthController {
   async signIn(@Body() logindata: loginDTO, @Req() req: Request) {
     console.log(logindata.email)
     console.log(logindata.password)
+
     return this.authService.signIn(logindata, req.session);
   }
 

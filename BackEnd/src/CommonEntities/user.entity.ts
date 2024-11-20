@@ -3,6 +3,7 @@ import { AccountEntity } from "../Employee/Entity/Account.entity";
 import { Transactions } from "../Employee/Entity/transaction.entity";
 import { BeforeInsert, Column, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { randomBytes } from "crypto";
+import { OTPs } from "./Otp.entity";
 
 @Entity("Users")
 export class Users {
@@ -39,6 +40,9 @@ export class Users {
 
     @OneToMany(() => Transactions, Transactions => Transactions.userId)
     Transactions: Transactions[];
+    
+    @OneToMany(() => OTPs, OTPs => OTPs.userId)
+    OTPs: OTPs[];
 
     // @BeforeInsert()
     // generateID() {
