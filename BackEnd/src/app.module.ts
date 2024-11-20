@@ -16,7 +16,7 @@ import { UserModule } from './User/user.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'admin',
+      password: 'Tiger',
       database: 'DBH',
       autoLoadEntities: true,
       synchronize: true,

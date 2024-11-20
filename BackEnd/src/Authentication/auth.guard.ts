@@ -26,8 +26,9 @@ export class AuthGuard implements CanActivate {
                     secret: jwtConstants.secret
                 }
             );
-            console.log(payload);
+            console.log("Payload:",payload);
             request['user'] = payload;
+            console.log(request['user']);
             // Check if user has one of the required roles
             const requiredRoles = this.reflector.get<string[]>('role', context.getHandler()); // Fetch roles metadata
             console.log('Required Roles:', requiredRoles);

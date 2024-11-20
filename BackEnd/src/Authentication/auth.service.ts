@@ -34,7 +34,7 @@ export class AuthService {
       if (!isMatch) {
         throw new UnauthorizedException("Please Give Valid Data");
       }
-      const payload = { email: user.email, role: user.Role.Name };
+      const payload = { email: user.Email, role: user.Role.Name };
       console.log('User Roles Service:', user.Role.Name);
       // Store data in session
       // session['email'] = user.email;

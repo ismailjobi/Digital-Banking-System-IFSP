@@ -71,6 +71,9 @@ export class EmployeeDTO {
     accountType: string;
     
     @Optional()
+    accountStatus :boolean;
+    
+    @Optional()
     balance: number;
   accountNumber: any;
 }
@@ -91,6 +94,7 @@ export class profileDTO {
     @IsNotEmpty({ message: 'Date of birth must not be empty' })
     dob: string;
 
+    @Optional()
     @IsNotEmpty({ message: 'NID must not be empty' })
     @Matches(/^\d{8}(?:\d{8})?$/, { message: 'NID must be 8 digits long' })
     nid: string;
@@ -99,6 +103,7 @@ export class profileDTO {
     @Matches(/^01\d*$/, { message: 'Phone number must start with "01"' })
     phone: string;
 
+    @Optional()
     @MaxLength(100, { message: 'Email can be at most 100 characters long' })
     @IsEmail({}, { message: 'Invalid email format' })
     email: string;
@@ -112,6 +117,6 @@ export class profileDTO {
     @Optional()
     @IsNotEmpty({ message: 'Role must not be empty' })
     role: string;
+  
 }
-
 
