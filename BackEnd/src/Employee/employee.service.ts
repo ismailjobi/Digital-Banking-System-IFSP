@@ -19,6 +19,8 @@ import * as Handlebars from 'handlebars';
 import * as fs from 'fs';
 import * as path from 'path';
 import { UpdateNomineeDto } from "./DTO/nomineeupdate.dto";
+import { generateAccountActivation} from "src/Templates/accountactivation";
+import { generateAccountDeactivation } from "src/Templates/accountdeactivation";
 
 @Injectable()
 export class EmployeeService {
@@ -451,30 +453,20 @@ export class EmployeeService {
         throw new NotFoundException('No account found for the given user ID');
       }
 
-      // Mark the account inactive
-      account.Authentication.Active = false;
+      // Mark the account active
+      account.Authentication.Active = true;
 
-      // Prepare data for the template
-      const templateData = {
-        Name: account.fullName,
-        Accounts: account.Accounts.map((acc) => ({
-          AccountNumber: `${acc.accountNumber.toString().slice(0, 2)}****${acc.accountNumber
-            .toString()
-            .slice(-2)}`,
-          AccountType: acc.accountType,
-          Balance: `$${acc.balance.toFixed(2)}`,
-        })),
-      };
+      // Map the Accounts array to match the expected structure for the Handlebars template
+      const mappedAccounts = account.Accounts.map((acc) => ({
+        AccountNumber: `${acc.accountNumber.toString().slice(0, 2)}****${acc.accountNumber
+          .toString()
+          .slice(-2)}`,
+        AccountType: acc.accountType,
+        Balance: `$${acc.balance.toFixed(2)}`,
+      }));
 
-      console.log(templateData); // Ensure this contains correct data
-
-      // Load and compile the Handlebars template
-      const templatePath = path.join(__dirname, '../Templates/account-activation.html');
-      const templateSource = fs.readFileSync(templatePath, 'utf8');
-      const compiledTemplate = Handlebars.compile(templateSource);
-
-      // Render the HTML content
-      const emailContent = compiledTemplate(templateData);
+      // Generate the HTML content for the email using the mapped data
+      const emailContent = generateAccountActivation(account.fullName, mappedAccounts);
 
       // Send the email with raw HTML
       await this.emailService.sendMail(
@@ -489,7 +481,7 @@ export class EmployeeService {
       return "UserID: " + userId + " is now active.";
     } catch (error) {
       // Here We Handle The Error 
-      throw new Error("Error occurred while activating user account.");
+      throw new Error("Error occurred while activating user account." + error);
     }
   }
 
@@ -507,27 +499,17 @@ export class EmployeeService {
       // Mark the account inactive
       account.Authentication.Active = false;
 
-      // Prepare data for the template
-      const templateData = {
-        Name: account.fullName,
-        Accounts: account.Accounts.map((acc) => ({
-          AccountNumber: `${acc.accountNumber.toString().slice(0, 2)}****${acc.accountNumber
-            .toString()
-            .slice(-2)}`,
-          AccountType: acc.accountType,
-          Balance: `$${acc.balance.toFixed(2)}`,
-        })),
-      };
+      // Map the Accounts array to match the expected structure for the Handlebars template
+      const mappedAccounts = account.Accounts.map((acc) => ({
+        AccountNumber: `${acc.accountNumber.toString().slice(0, 2)}****${acc.accountNumber
+          .toString()
+          .slice(-2)}`,
+        AccountType: acc.accountType,
+        Balance: `$${acc.balance.toFixed(2)}`,
+      }));
 
-      console.log(templateData); // Ensure this contains correct data
-
-      // Load and compile the Handlebars template
-      const templatePath = path.join(__dirname, '../Templates/account-deactivation.html');
-      const templateSource = fs.readFileSync(templatePath, 'utf8');
-      const compiledTemplate = Handlebars.compile(templateSource);
-
-      // Render the HTML content
-      const emailContent = compiledTemplate(templateData);
+      // Generate the HTML content for the email using the mapped data
+      const emailContent = generateAccountDeactivation(account.fullName, mappedAccounts);
 
       // Send the email with raw HTML
       await this.emailService.sendMail(

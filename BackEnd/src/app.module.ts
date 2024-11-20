@@ -5,6 +5,7 @@ import { AuthModule } from './Authentication/auth.module';
 import { adminAuthModule } from './Administrator/Auth/adminAuth.module';
 import { AdminModule } from './Administrator/admin.module';
 import { UserModule } from './User/user.module';
+import { template } from 'handlebars';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserModule } from './User/user.module';
       synchronize: true,
     }),
     AuthModule,adminAuthModule,
+    
   ],
   controllers: [],
   providers: [],
