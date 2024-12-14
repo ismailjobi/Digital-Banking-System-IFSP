@@ -1,5 +1,6 @@
+import { OTPs } from "src/CommonEntities/Otp.entity";
 import { Users } from "../../CommonEntities/user.entity";
-import {  BeforeInsert, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import {  BeforeInsert, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
 
 @Entity("Transaction")
 export class Transactions {
@@ -32,6 +33,8 @@ export class Transactions {
 
     @Column({ name: 'Status', default: true })
     transactionStatus: boolean;
+    @Column({ name: 'Verification', default: false })
+    verification: boolean;
 
     @CreateDateColumn({ name: 'TransactionTime' })
     applicationTime: Date;
@@ -46,5 +49,11 @@ export class Transactions {
     @ManyToOne(() => Users, Users => Users.Transactions)
     @JoinColumn({ name: 'User_ID' })
     userId: Users;
+
+    @OneToOne(() => OTPs, Otps => Otps.Id)
+    Otps: OTPs;
+
+
+
 }
 

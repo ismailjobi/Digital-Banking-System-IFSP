@@ -22,11 +22,9 @@ export class AuthService {
   async signIn(logindata: loginDTO, session: Session): Promise<{ access_token: string, role: string,userId:string }> {
     try {
       const user = await this.employeeService.findOne(logindata);
-      console.log(user);
       if (!user) {
         throw new UnauthorizedException("This Account is Not Found");
       }
-      console.log(user.User.userId);
       if (!user.Active) {
         throw new UnauthorizedException("Your Account Is Not Active.");
       }
@@ -34,8 +32,10 @@ export class AuthService {
       if (!isMatch) {
         throw new UnauthorizedException("Please Give Valid Data");
       }
-      const payload = { email: user.Email, role: user.Role.Name };
+      const payload = { email: user.Email,  userId:user.User.userId ,role: user.Role.Name };
+      console.log('User Roles Service:', payload);
       console.log('User Roles Service:', user.Role.Name);
+
       // Store data in session
       // session['email'] = user.email;
       // console.log(session['email']);

@@ -14,11 +14,14 @@ import { Authentication } from "src/Authentication/Entity/auth.entity";
 import { Transactions } from "./Entity/transaction.entity";
 import { AdminModule } from "src/Administrator/admin.module";
 import { FormerEmployee } from "./Entity/formeremployee.entity";
+import { OTPs } from "src/CommonEntities/Otp.entity";
+import { OtpService } from "src/Verification/otp.service";
+
 
 
 
 @Module({
-    imports: [AdminModule,TypeOrmModule.forFeature([Users,Authentication,AccountEntity,Transactions,ServiceEntity,FormerEmployee],),
+    imports: [AdminModule,TypeOrmModule.forFeature([Users,Authentication,AccountEntity,Transactions,ServiceEntity,FormerEmployee,OTPs]),
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
@@ -27,7 +30,7 @@ import { FormerEmployee } from "./Entity/formeremployee.entity";
     
   ],
     controllers:[EmployeeController],
-    providers: [EmployeeService,AuthService,EmailService,UserService],
+    providers: [EmployeeService,AuthService,EmailService,UserService,OtpService],
     exports: [EmployeeService],
   })
   export class EmployeeModule {}

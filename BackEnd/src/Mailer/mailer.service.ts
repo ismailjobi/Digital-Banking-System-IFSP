@@ -10,17 +10,17 @@ export class EmailService {
       service: 'gmail',
       auth: {
         user: 'ifspbankplc@gmail.com',
-        pass: 'kpto phvy genq fquz',
+        pass: 'rubp ylor rqgk qchu',
     },
     });
   }
-
-  async sendMail(to: string, subject: string, html: string): Promise<void> {
+  //, html: string
+  async sendMail(to: string, subject: string, text: string): Promise<void> {
     const mailOptions = {
       from: 'ifspbankplc@gmail.com',
       to,
       subject,
-      html, // Pass raw HTML content here
+      text, // Pass raw HTML content here
     };
 
     await this.transporter.sendMail(mailOptions);

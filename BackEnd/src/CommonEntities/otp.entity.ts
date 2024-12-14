@@ -1,5 +1,6 @@
-import { Entity,Column,PrimaryGeneratedColumn,CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Entity,Column,PrimaryGeneratedColumn,CreateDateColumn, ManyToOne, JoinColumn, OneToOne } from "typeorm";
 import { Users } from "./user.entity";
+import { Transactions } from "src/Employee/Entity/transaction.entity";
 
 @Entity("OTP")
 
@@ -20,4 +21,10 @@ export class OTPs{
     @JoinColumn({ name: 'User_ID' })
     userId: Users;
 
+    @OneToOne(() => Transactions, transactions => transactions.transactionId, {
+        nullable: true, // Allow null values
+      })
+      @JoinColumn({ name: 'Transaction_ID' })
+      transactions: Transactions | null; // Explicitly define the type as nullable
+    
 }

@@ -11,12 +11,13 @@ import { UserModule } from './User/user.module';
     EmployeeModule,
     AdminModule ,
     UserModule,
+   
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'Tiger',
+      password: 'admin',
       database: 'DBH',
       autoLoadEntities: true,
       synchronize: true,

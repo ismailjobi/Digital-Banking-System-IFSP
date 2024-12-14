@@ -5,6 +5,8 @@ import { Roles } from 'src/CustomDecorator/roles.decorator';
 import { AuthGuard } from 'src/Authentication/auth.guard';
 import { transactionDto } from './UserDTO/user.transaction.dto';
 import { Transactions } from 'src/Employee/Entity/transaction.entity';
+import { ValidationDto } from 'src/Verification/VerificationDTO/otp.dto';
+import { Role } from 'src/Administrator/Entity/Role.entity';
 
 @Controller('/api/user')
 export class UserController {
@@ -56,14 +58,11 @@ export class UserController {
       try {
           
        // console.log("User ID From Session"+req.role);
-        console.log("My Obj From Session"+myobj);
-        console.log("User ID From Session"+req.userId);
-        console.log("User Email From Session"+req.email);
+       // console.log("User ID From Session"+req.user?.userId);
+   
         const userEmail = req.user?.email; // Access the 'email' property stored in the session
-        console.log("User Email From Session"+userEmail);
-        console.log(`User Email from Token: ${userEmail}`);
- 
-        return await this.userService.deposit(myobj,req.userId);
+       
+        return await this.userService.deposit(myobj,req.email);
       } catch (error) {
         if (error instanceof NotFoundException) {
           throw error;
@@ -73,18 +72,17 @@ export class UserController {
     }
   }
 
-  //--5 Withdraw Money
+  //--5 Tranfer Money . Initially Varification Will be false. after submitting Otp Transaction will be completed
   @Roles('user')
   @Patch('/transfer')
+  @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe())
-  async transer(@Body() myobj: transactionDto , @Req() req: any ): Promise<{ balance: number, transaction: Transactions }> {
+  async transer(@Body() myobj: transactionDto , @Req() req): Promise<{transaction: Transactions }> {
     {
       try {
 
-        console.log("User ID From Session"+req.userId);
-        console.log("My Obj From Session"+myobj);
  
-        return await this.userService.transfer(myobj,req.userId);
+        return await this.userService.transfer(myobj,req.user.email);
       } catch (error) {
         if (error instanceof NotFoundException) {
           throw error;
@@ -94,28 +92,41 @@ export class UserController {
     }
   }
 
- // @UseGuards(AuthGuard)
+  //validate Transfer
   @Roles('user')
-  @Get('/getAccountInfo')
-  getUserAccountInfo(@Body() body: any) {
-    
-    console.log("Session"+body.userId);
+  @Patch('/validateTransfer')
+  @UseGuards(AuthGuard)
 
-    if (body.userId) {
-      // Retrieve data from session
-     // const userId = session['userId']; // Access the 'email' property stored in the session
-      console.log("User ID From Session"+body.userId);
-      return this.userService.getAccountInfo(body.userId);
-    }
-    throw new NotFoundException('No data in BODY');
+  async validateTransfer(@Body() myobj : ValidationDto,@Req() req): Promise<{msg: string }> {
+
+    return await this.userService.validateTransfer(req.user?.userId,myobj.otp);
+   
 
   }
+
+
+ // @UseGuards(AuthGuard)
+  // @Roles('user')
+  // @Get('/getAccountInfo')
+  // getUserAccountInfo(@Body() body: any) {
+    
+  //   console.log("Session"+body.userId);
+
+  //   if (body.userId) {
+  //     // Retrieve data from session
+  //    // const userId = session['userId']; // Access the 'email' property stored in the session
+  //     console.log("User ID From Session"+body.userId);
+  //     return this.userService.getAccountInfo(body.userId);
+  //   }
+  //   throw new NotFoundException('No data in BODY');
+
+  //}
 
 
   
   ///--6 TransectionHistor  many
 
-  @UseGuards(AuthGuard)
+ @UseGuards(AuthGuard)
   @Roles('User')
   @Get('info-and-transactions')
   async getUserInfoAndTransactions(id: number): Promise<{ transactions: Transactions[] }> {
@@ -123,8 +134,16 @@ export class UserController {
   }
 
 
-  
-
+@Roles('user')
+@UseGuards(AuthGuard)
+@Get('TransactionID')
+async TransactionID(  @Req() req):Promise<{}>{
+  console.log("User ID From Session"+req.user?.userId); 
+  console.log("User ID From Session"+req.user.email);
+  console.log("User ID From Session"+req.userId);
+  const id = req.userId;
+  return await this.userService.getTransactionId(req.user?.userId);
+}
 
 
   @Get('Hello')

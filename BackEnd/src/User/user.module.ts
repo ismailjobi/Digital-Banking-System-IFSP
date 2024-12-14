@@ -7,6 +7,7 @@ import { AuthService } from '../Authentication/auth.service';
 import { AuthController } from '../Authentication/auth.controller';
 import { AccountEntity } from '../Employee/Entity/Account.entity';
 import { ServiceEntity } from '../Employee/Entity/service.entity';
+import {  OTPs } from '../CommonEntities/Otp.entity';
 import { EmployeeService } from 'src/Employee/employee.service';
 import { jwtConstants } from 'src/Authentication/constants';
 import { EmailService } from 'src/Mailer/mailer.service';
@@ -15,17 +16,22 @@ import { Authentication } from 'src/Authentication/Entity/auth.entity';
 import { Transactions } from 'src/Employee/Entity/transaction.entity';
 import { AdminModule } from 'src/Administrator/admin.module';
 import { FormerEmployee } from 'src/Employee/Entity/formeremployee.entity';
+import { OtpService } from 'src/Verification/otp.service';
+
+
+
 
 @Module({
   imports: [
     AdminModule,
+
     TypeOrmModule.forFeature([
       Users,
       Authentication,
       AccountEntity,
       Transactions,
       ServiceEntity,
-      ,
+      OTPs,
       FormerEmployee
     ]),
     JwtModule.register({
@@ -36,7 +42,7 @@ import { FormerEmployee } from 'src/Employee/Entity/formeremployee.entity';
     
   ],
  controllers: [UserController,AuthController],
- providers:[ UserService,AuthService,EmployeeService,EmailService],
+ providers:[ UserService,AuthService,EmployeeService,EmailService,OtpService],
  exports: [UserService],
 })
 export class UserModule {}
